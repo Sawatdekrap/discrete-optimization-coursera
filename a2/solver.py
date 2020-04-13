@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from knapsack import solve_knapsack, Item
+from knapsack import solve_knapsack, solve_branch_and_bound, Item
 
 
 def get_inputs(input_data):
@@ -28,7 +28,8 @@ def solve_it(input_data):
     item_count, capacity, items = get_inputs(input_data)
 
     # TODO solve
-    obj, taken = solve_knapsack(capacity, items, inc=1)
+    # obj, taken = solve_knapsack(capacity, items, inc=1)
+    obj, taken = solve_branch_and_bound(capacity, items)
 
     return get_outputs(obj, True, taken)
 

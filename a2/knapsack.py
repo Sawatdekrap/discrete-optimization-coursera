@@ -1,5 +1,6 @@
 from collections import namedtuple, deque
 from array import array
+from itertools import zip_longest
 
 
 Item = namedtuple("Item", ['index', 'value', 'weight'])
@@ -39,6 +40,70 @@ def solve_knapsack(capacity, items, inc=1):
     return obj, taken
 
 
+def solve_branch_and_bound(capacity, items: list):
+    n_items = len(items)
+    value_density = lambda i: i.value / i.weight
+    sorted_items = sorted(items, key=value_density, reverse=True)
+    stack = [True]
+    current_best = 0
+    current_best_path = None
+
+    def get_upper_bound():
+        c = v = 0
+        for i, select in zip_longest(sorted_items, stack, fillvalue=None):
+            if select is False:
+                continue
+            if c + i.weight > capacity:
+                v += (capacity - c) * i.value / i.weight
+                break
+            c += i.weight
+            v += i.value
+        
+        return v
+    
+    def is_feasible():
+        return sum([i.weight for i, select in zip(sorted_items, stack) if select]) <= capacity
+    
+    def get_leaf_value():
+        return sum([i.value for i, select in zip(sorted_items, stack) if select])
+    
+    def prune():
+        while stack and stack[-1] == False:
+            stack.pop()
+        if stack:
+            stack[-1] = False
+
+    while len(stack) > 0:
+        # Check current node is feasible
+        if not is_feasible():
+            prune()
+            continue
+
+        # Get upper bound, prune if worse than current best
+        upper_bound = get_upper_bound()
+        if upper_bound < current_best:
+            prune()
+            continue
+
+        # If not leaf, go to next
+        if len(stack) != n_items:
+            stack.append(True)
+            continue
+
+        # If leaf, set current_best if best and go to next
+        value = get_leaf_value()
+        if value > current_best:
+            current_best = value
+            current_best_path = stack.copy()
+        prune()
+        # print("Current Best: {}, Stack: {}".format(current_best, current_best_path))
+
+    best_items = [0] * n_items
+    for selected, item in zip(current_best_path, sorted_items):
+        best_items[item.index] = selected
+    return current_best, best_items
+
+    
 def print_array(a):
     for line in a:
         for x in line:
