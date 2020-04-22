@@ -4,6 +4,14 @@
 from graph import Graph
 
 
+def format_output(solution, is_optimal):
+    s = (
+        f"{max(solution)+1} {1 if is_optimal else 0}\n"
+        f"{' '.join([str(c) for c in solution])}"
+    )
+    return s
+
+
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
 
@@ -21,9 +29,9 @@ def solve_it(input_data):
         edges.append((int(parts[0]), int(parts[1])))
 
     graph = Graph(n_nodes=node_count, edges=edges)
-    output_data = graph.solve()
+    solution, is_optimal = graph.solve(timeout=5*60)
 
-    return output_data
+    return format_output(solution, is_optimal)
 
 
 import sys
